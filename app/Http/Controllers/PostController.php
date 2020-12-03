@@ -12,7 +12,10 @@ class PostController extends Controller
     {
         //pode ser usado esses dois metódos para buscar todos os itens do banco
         //$posts = Post::all();
-        $posts = Post::get();
+        //o paginate ordena os dados a serem exibidos - por default apresenta 15 no parâmetro pode ser indicado a quantidade de itens devem ser exibidos
+        //para ordernar os itens pode-se usar o orderBy ou o latest para apresentar em ordem decrescente
+        //$posts = Post::orderBy('id', 'DESC')->paginate();
+        $posts = Post::latest()->paginate();
 
         //os dados podem ser enviados para a view dessas duas formas
         /*return view('admin.posts.index', [
@@ -26,8 +29,7 @@ class PostController extends Controller
 
     public function create()
     {
-        //return view('admin.posts.create');
-        dd('arquivo create');
+        return view('admin.posts.create');
     }
 
     public function store(StoreUpdatePost $request)
@@ -94,5 +96,22 @@ class PostController extends Controller
         return redirect()
             ->route('posts.index')
             ->with('message', 'Post editado com sucesso');
+    }
+
+    public function search(Request $request)
+    {
+        //para manter a paginação, cria uma variável com as requisições de consuta e passa para a view
+        $filters = $request->except('_token');
+
+        $posts = Post::where('title', $request->search)
+            ->orWhere('content', 'LIKE', "%{$request->search}%")
+            ->paginate(2);
+
+        //para fazer o debug vc pode usar o ->toSql() e fazer um DD na $posts
+        /*$posts = Post::where('title', '%{$request->search}%')
+            ->orWhere('content', 'LIKE', '%{$request->search}%')
+            ->toSql();*/
+
+        return view('admin.posts.index', compact('posts', 'filters'));
     }
 }
