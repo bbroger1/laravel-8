@@ -12,5 +12,5 @@ class Post extends Model
     protected $table = 'posts';
 
     //quando existe essa informação apenas os campos da tabela indicados no parâmetro serão preenchidos com o método Post::create($request->all());
-    protected $fillable = ['title', 'content'];
+    protected $fillable = ['title', 'image', 'content'];
 }
