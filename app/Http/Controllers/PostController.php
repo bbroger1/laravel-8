@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreUpdatePost;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PostController extends Controller
@@ -55,7 +56,7 @@ class PostController extends Controller
         Post::create($data);
         return redirect()
             ->route('posts.index')
-            ->with('message', 'Post criado com sucesso');;
+            ->with('message', 'Post criado com sucesso');
     }
 
     public function show($id)
@@ -81,6 +82,10 @@ class PostController extends Controller
                 ->with('message', 'Não foi possível deletar o Post.');
         }
 
+        if (Storage::exists($post->image)) {
+            Storage::delete([$post->image]);
+        }
+
         $post->delete();
 
         return redirect()
@@ -104,9 +109,25 @@ class PostController extends Controller
             return redirect()->route('posts.index');
         }
 
-        $post->update(
-            $request->all()
-        );
+        //por segurança não é legal criar os dados assim sem ter a indicação dos campos $fillable no model
+        $data = $request->all();
+
+        //upload do arquivo
+        //captura da imagem pode ser desta forma $request->file('image'); ou na usada abaixo
+        if ($request->image && $request->image->isValid()) {
+            if (Storage::exists($post->image)) {
+                Storage::delete([$post->image]);
+            }
+            //gerar um nome único para o arquivo
+            //o helper Str
+            $nameFile = Str::of($request->title)->slug('-') . '.' . $request->image->getClientOriginalExtension();
+
+            //utilizar storeAs para renomear o arquivo
+            $image = $request->image->storeAs('posts', $nameFile);
+            $data['image'] = $image;
+        }
+
+        $post->update($data);
 
         return redirect()
             ->route('posts.index')
