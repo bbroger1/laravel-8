@@ -141,6 +141,7 @@ class PostController extends Controller
 
         $posts = Post::where('title', $request->search)
             ->orWhere('content', 'LIKE', "%{$request->search}%")
+            ->orWhere('id', 'LIKE', "%{$request->search}%")
             ->paginate(2);
 
         //para fazer o debug vc pode usar o ->toSql() e fazer um DD na $posts
