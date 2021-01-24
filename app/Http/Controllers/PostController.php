@@ -17,7 +17,7 @@ class PostController extends Controller
         //o paginate ordena os dados a serem exibidos - por default apresenta 15 no parâmetro pode ser indicado a quantidade de itens devem ser exibidos
         //para ordernar os itens pode-se usar o orderBy ou o latest para apresentar em ordem decrescente
         //$posts = Post::orderBy('id', 'DESC')->paginate();
-        $posts = Post::latest()->paginate();
+        $posts = Post::latest()->paginate(2);
 
         //os dados podem ser enviados para a view dessas duas formas
         /*return view('admin.posts.index', [
@@ -139,14 +139,15 @@ class PostController extends Controller
         //para manter a paginação, cria uma variável com as requisições de consuta e passa para a view
         $filters = $request->except('_token');
 
-        $posts = Post::where('title', $request->search)
+        $posts = Post::where('title', 'LIKE', "%$request->search%")
             ->orWhere('content', 'LIKE', "%{$request->search}%")
             ->orWhere('id', 'LIKE', "%{$request->search}%")
             ->paginate(2);
 
         //para fazer o debug vc pode usar o ->toSql() e fazer um DD na $posts
-        /*$posts = Post::where('title', '%{$request->search}%')
+        /*$posts = Post::where('title', 'LIKE', '%{$request->search}%')
             ->orWhere('content', 'LIKE', '%{$request->search}%')
+            ->orWhere('id', 'LIKE', "%{$request->search}%")
             ->toSql();*/
 
         return view('admin.posts.index', compact('posts', 'filters'));
